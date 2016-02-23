@@ -1,0 +1,72 @@
+﻿<Window x:Class="OfflineVideosInfo.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:OfflineVideosInfo"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="350" Width="525">
+  <DockPanel>
+    <ListView Name="lsvVideoInfo">
+      <ListView.View>
+        <GridView>
+          <GridViewColumn Width="80" DisplayMemberBinding="{Binding Id}">
+            <GridViewColumn.Header>
+              <GridViewColumnHeader Tag="Id" Click="lsvVideoInfoColumnHeader_Click">Id</GridViewColumnHeader>
+            </GridViewColumn.Header>
+          </GridViewColumn>
+          <GridViewColumn Width="80" DisplayMemberBinding="{Binding Title}">
+            <GridViewColumn.Header>
+              <GridViewColumnHeader Tag="Title" Click="lsvVideoInfoColumnHeader_Click">Title</GridViewColumnHeader>
+            </GridViewColumn.Header>
+          </GridViewColumn>
+          <GridViewColumn Width="80" DisplayMemberBinding="{Binding EpisodeNumber}">
+            <GridViewColumn.Header>
+              <GridViewColumnHeader Tag="EpisodeNumber" Click="lsvVideoInfoColumnHeader_Click">Episode Number</GridViewColumnHeader>
+            </GridViewColumn.Header>
+          </GridViewColumn>
+          <GridViewColumn Width="80" DisplayMemberBinding="{Binding EpisodeDescription}">
+            <GridViewColumn.Header>
+              <GridViewColumnHeader Tag="EpisodeDescription" Click="lsvVideoInfoColumnHeader_Click">Episode Description</GridViewColumnHeader>
+            </GridViewColumn.Header>
+          </GridViewColumn>
+          <GridViewColumn Width="80" DisplayMemberBinding="{Binding IsCompleted}">
+            <GridViewColumn.Header>
+              <GridViewColumnHeader Tag="IsCompleted" Click="lsvVideoInfoColumnHeader_Click">Is Completed</GridViewColumnHeader>
+            </GridViewColumn.Header>
+          </GridViewColumn>
+          <GridViewColumn Width="80" DisplayMemberBinding="{Binding FileUpdatedTime}">
+            <GridViewColumn.Header>
+              <GridViewColumnHeader Tag="FileUpdatedTime" Click="lsvVideoInfoColumnHeader_Click">File Updated Time</GridViewColumnHeader>
+            </GridViewColumn.Header>
+          </GridViewColumn>
+          <GridViewColumn Width="80" DisplayMemberBinding="{Binding Description}">
+            <GridViewColumn.Header>
+              <GridViewColumnHeader Tag="Description" Click="lsvVideoInfoColumnHeader_Click">Description</GridViewColumnHeader>
+            </GridViewColumn.Header>
+          </GridViewColumn>
+          <GridViewColumn Width="80" DisplayMemberBinding="{Binding TotalBytes}">
+            <GridViewColumn.Header>
+              <GridViewColumnHeader Tag="TotalBytes" Click="lsvVideoInfoColumnHeader_Click">Total Bytes</GridViewColumnHeader>
+            </GridViewColumn.Header>
+          </GridViewColumn>
+          <GridViewColumn Width="80" DisplayMemberBinding="{Binding TotalTimeInMisecs}">
+            <GridViewColumn.Header>
+              <GridViewColumnHeader Tag="TotalTimeInMisecs" Click="lsvVideoInfoColumnHeader_Click">Total Time in Milliseconds</GridViewColumnHeader>
+            </GridViewColumn.Header>
+          </GridViewColumn>
+          <GridViewColumn Width="80" DisplayMemberBinding="{Binding OriginalUrl}">
+            <GridViewColumn.Header>
+              <GridViewColumnHeader Tag="OriginalUrl" Click="lsvVideoInfoColumnHeader_Click">Original Url</GridViewColumnHeader>
+            </GridViewColumn.Header>
+          </GridViewColumn>
+          <GridViewColumn Width="80" DisplayMemberBinding="{Binding VideoFilePath}">
+            <GridViewColumn.Header>
+              <GridViewColumnHeader Tag="VideoFilePath" Click="lsvVideoInfoColumnHeader_Click">Video File Path</GridViewColumnHeader>
+            </GridViewColumn.Header>
+          </GridViewColumn>
+        </GridView>
+      </ListView.View>
+    </ListView>
+  </DockPanel>
+</Window>
