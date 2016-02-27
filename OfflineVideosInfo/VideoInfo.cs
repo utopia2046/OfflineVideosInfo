@@ -113,7 +113,10 @@ namespace OfflineVideosInfo
             foreach (var epFolder in episodeFolders)
             {
                 var info = ParseEpisode(epFolder);
-                infoList.Add(info);
+                if (info != null)
+                {
+                    infoList.Add(info);
+                }
             }
             Trace.TraceInformation("End looking for episodes under folder: {0}", path);
             Trace.TraceInformation("  {0} episodes found", infoList.Count);
