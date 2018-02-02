@@ -18,7 +18,7 @@ namespace OfflineVideosInfo
 
         public long Id { get; set; }
         public string Title { get; set; }
-        public long EpisodeNumber { get; set; }
+        public string EpisodeNumber { get; set; }
         public string EpisodeDescription { get; set; }
         public string Description { get; set; }
         public string TypeTag { get; set; }
@@ -37,7 +37,8 @@ namespace OfflineVideosInfo
             var avFolders = Directory.GetDirectories(rootPath);
             foreach (var avFolder in avFolders)
             {
-                var avInfo = VideoInfo.ParseAvFolder(avFolder);
+                DirectoryInfo di = new DirectoryInfo(avFolder);
+                var avInfo = VideoInfo.ParseAvFolder(avFolder, di.Name.ToLowerInvariant().StartsWith("s_"));
                 infos.AddRange(avInfo);
             }
             Trace.TraceInformation("End look up video info under folder: {0}", rootPath);
@@ -104,32 +105,39 @@ namespace OfflineVideosInfo
             xdoc.Save(htmlFileName, SaveOptions.OmitDuplicateNamespaces);
         }
 
-        private static VideoInfo[] ParseAvFolder(string path)
+        private static VideoInfo[] ParseAvFolder(string path, bool isExternal)
         {
             var infoList = new List<VideoInfo>();
 
             Trace.TraceInformation("Begin looking for episode under folder: {0}", path);
+
             var episodeFolders = Directory.GetDirectories(path);
             foreach (var epFolder in episodeFolders)
             {
-                var info = ParseEpisode(epFolder);
+                var info = ParseEpisode(epFolder, isExternal);
                 if (info != null)
                 {
                     infoList.Add(info);
                 }
             }
+
             Trace.TraceInformation("End looking for episodes under folder: {0}", path);
             Trace.TraceInformation("  {0} episodes found", infoList.Count);
 
             return infoList.ToArray();
         }
 
-        private static VideoInfo ParseEpisode(string path)
+        private static VideoInfo ParseEpisode(string path, bool isExternal)
         {
             VideoInfo info = null;
 
             string entryFilePath = Path.Combine(path, entryFile);
-            info = ParseEntryJson(entryFilePath);
+            info = isExternal ? ParseExternalEntryJson(entryFilePath) : ParseEntryJson(entryFilePath);
+            if (info == null)
+            {
+                Trace.TraceWarning("Error when parsing {0}", path);
+                return null;
+            }
 
             var contentFolders = Directory.GetDirectories(path);
             if (contentFolders.Length != 1)
@@ -154,24 +162,68 @@ namespace OfflineVideosInfo
                 return null;
             }
 
-            string entryJson = ReadTextFile(entryJsonPath);
-            var entry = ParseJsonString<Entry>(entryJson);
+            try
+            {
+                string entryJson = ReadTextFile(entryJsonPath);
+                var entry = ParseJsonString<Entry>(entryJson);
 
-            Trace.TraceInformation("Parsing entry.json done successfully. Video Id = {0}, Title = {1}", entry.avid, entry.title);
-            var info = new VideoInfo() {
-                Id = entry.avid,
-                Title = entry.title,
-                EpisodeNumber = entry.page_data.page,
-                EpisodeDescription = entry.page_data.part,
-                TypeTag = entry.type_tag,
-                IsCompleted = entry.is_completed,
-                TotalBytes = entry.total_bytes,
-                TotalTimeInMisecs = entry.total_time_milli
-            };
+                Trace.TraceInformation("Parsing entry.json done successfully. Video Id = {0}, Title = {1}", entry.avid, entry.title);
+                var info = new VideoInfo()
+                {
+                    Id = entry.avid,
+                    Title = entry.title,
+                    EpisodeNumber = entry.page_data.page.ToString(),
+                    EpisodeDescription = entry.page_data.part,
+                    TypeTag = entry.type_tag,
+                    IsCompleted = entry.is_completed,
+                    TotalBytes = entry.total_bytes,
+                    TotalTimeInMisecs = entry.total_time_milli
+                };
+                Trace.TraceInformation("End parsing entry.json file.");
 
-            Trace.TraceInformation("End parsing entry.json file.");
+                return info;
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError("Exception when parsing EntryJson." + ex.Message);
+                return null;
+            }
+        }
 
-            return info;
+        private static VideoInfo ParseExternalEntryJson(string entryJsonPath)
+        {
+            if (!File.Exists(entryJsonPath))
+            {
+                Trace.TraceError(entryJsonPath + " not found.");
+                return null;
+            }
+
+            try
+            {
+                string entryJson = ReadTextFile(entryJsonPath);
+                var entry = ParseJsonString<ExternalEntry>(entryJson);
+
+                Trace.TraceInformation("Parsing entry.json done successfully. Video Id = {0}, Title = {1}", entry.ep.av_id, entry.title);
+                var info = new VideoInfo()
+                {
+                    Id = entry.ep.av_id,
+                    Title = entry.title,
+                    EpisodeNumber = entry.ep.index,
+                    EpisodeDescription = entry.ep.index_title,
+                    TypeTag = entry.type_tag,
+                    IsCompleted = entry.is_completed,
+                    TotalBytes = entry.total_bytes,
+                    TotalTimeInMisecs = entry.total_time_milli
+                };
+                Trace.TraceInformation("End parsing entry.json file.");
+
+                return info;
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError("Exception when parsing ExternalEntryJson." + ex.Message);
+                return null;
+            }
         }
 
         private static VideoInfo ParseIndexJson(string contentFolder, ref VideoInfo info)
@@ -183,14 +235,22 @@ namespace OfflineVideosInfo
                 return null;
             }
 
-            string indexJson = ReadTextFile(indexJsonPath);
-            var index = ParseJsonString<Index>(indexJson);
+            try
+            {
+                string indexJson = ReadTextFile(indexJsonPath);
+                var index = ParseJsonString<Index>(indexJson);
 
-            Trace.TraceInformation("Parsing index.json done successfully. ", index.description, index.normal_mrl);
-            info.Description = index.description;
-            info.OriginalUrl = index.normal_mrl;
+                Trace.TraceInformation("Parsing index.json done successfully. ", index.description, index.normal_mrl);
+                info.Description = index.description;
+                info.OriginalUrl = index.normal_mrl;
 
-            return info;
+                return info;
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError("Exception when parsing IndexJson." + ex.Message);
+                return null;
+            }
         }
 
         private static void FindVideoFile(string contentFolder, ref VideoInfo info)
